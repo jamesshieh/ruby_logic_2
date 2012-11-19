@@ -1,0 +1,9 @@
+#!/usr/bin/env ruby
+
+$LOAD_PATH.unshift(File.expand_path(File.join(File.dirname(__FILE__),".." , "lib")))
+require 'ruby_logic'
+
+user_input = gets.chomp
+parser = Parser.new(user_input)
+puts parser.parse
+
