@@ -5,9 +5,13 @@ class Interpreter
   end
 
   def solve(stmt)
-    operator, left, right = stmt
-    l, r = evaluate(left), evaluate(right)
+    operator, left= stmt
+    right = stmt[2] unless operator.type == :!
+    l = evaluate(left)
+    right = evaluate(right) unless operator.type == :!
     case operator.type
+    when :!
+      !l
     when :&
       l && r
     when :|
@@ -22,8 +26,6 @@ class Interpreter
       end
     when :+
       l == r
-    when :!
-      ! l
     end
   end
 
