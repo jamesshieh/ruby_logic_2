@@ -2,13 +2,17 @@ class Parser
 
   def initialize(user_input)
     lexer = Lexer.new(user_input)
-    @tokens = lexer.tokenize_input
+    @tokenized_input = lexer.tokenize_input
   end
 
   # Main parse function that is called
 
   def parse
-    parse_iff(@tokens)
+    parse_trees = []
+    @tokenized_input.each do |statement|
+      parse_trees << parse_iff(statement)
+    end
+    parse_trees
   end
 
   private

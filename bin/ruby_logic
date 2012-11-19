@@ -23,6 +23,9 @@ def pretty_print(parse_output)
 end
 
 puts
-pretty_print(parser.parse)
+parser.parse.each do |statement|
+  pretty_print(statement)
+  puts
+end
 puts
 
