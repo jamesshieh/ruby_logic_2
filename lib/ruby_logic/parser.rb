@@ -8,7 +8,7 @@ class Parser
   # Main parse function that is called
 
   def parse
-    parse_tree = parse_implies_and_iff(@tokens)
+    parse_iff(@tokens)
   end
 
   private
@@ -24,17 +24,17 @@ class Parser
       expr.each do |token|
         left_tokens << token
       end
-      left_parse_tree = parse_implies_and_iff(left_tokens)
+      left_parse_tree = parse_iff(left_tokens)
       tokens.shift
       expr = [left_parse_tree]
-      while tokens.empty?
+      while !tokens.empty?
         expr << tokens.shift
       end
       right_tokens = Tokens.new
       expr.each do |token|
         right_tokens << token
       end
-      parse_tree = parse_implies_and_iff(right_tokens)
+      parse_tree = parse_iff(right_tokens)
     elsif tokens.empty?
       return
     elsif tokens.peek.type == :proposition || tokens.peek.type == :array
@@ -44,11 +44,12 @@ class Parser
 
   def parse_negation(tokens)
     parse_tree = parse_nesting(tokens)
+
     if !tokens.empty? && tokens.peek.type == :!
       parse_tree = [tokens.shift, shift_and_expect(tokens, :proposition)]
-    else
-      parse_tree
     end
+    
+    parse_tree
   end
 
   def parse_and(tokens)
@@ -84,18 +85,26 @@ class Parser
     parse_tree
   end
 
-  def parse_implies_and_iff(tokens)
+  def parse_implies(tokens)
     parse_tree = parse_xor(tokens)
 
-    if !tokens.empty? && tokens.peek.type == :>
+    while !tokens.empty? && tokens.peek.type == :>
       op = tokens.shift
       parse_tree = [op, parse_tree, parse_xor(tokens)]
-    elsif !tokens.empty? && tokens.peek.type == :+
-      op = tokens.shift
-      parse_tree = [op, parse_tree, parse_xor(tokens)]
-    else
-      parse_tree
     end
+  
+    parse_tree
+  end
+
+  def parse_iff(tokens)
+    parse_tree = parse_implies(tokens)
+
+    while !tokens.empty? && tokens.peek.type == :+
+      op = tokens.shift
+      parse_tree = [op, parse_tree, parse_xor(tokens)]
+    end
+  
+    parse_tree
   end
 
   def shift_and_expect(tokens, type)

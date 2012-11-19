@@ -5,5 +5,24 @@ require 'ruby_logic'
 
 user_input = gets.chomp
 parser = Parser.new(user_input)
-puts parser.parse
+
+def pretty_print(parse_output)
+  print "[ "
+  if parse_output.class == Array
+    parse_output.each do |token|
+      if token.class == Array
+        pretty_print(token)
+      else
+        print " #{token.type} "
+      end
+    end
+  else
+    print " #{parse_output.type} "
+  end
+  print " ]"
+end
+
+puts
+pretty_print(parser.parse)
+puts
 

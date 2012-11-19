@@ -12,7 +12,7 @@ class Lexer
     @user_input.scan(/\S/).map do |token|
       case
       when token =~ /[A-Z]/
-        tokens << Token.new(token.to_sym, :proposition)
+        tokens << Token.new(:proposition, token.to_sym)
       when token =~ /[x\!\|\&\+\>]/
         tokens << Token.new(token.to_sym)
       when token =~ /[\(]/
