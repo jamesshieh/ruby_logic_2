@@ -1,18 +1,12 @@
 class Tokens < Array
 
-  # Tokens class which is an array of tokens and can peek
-
-  def initialize
-    @array_token = Token.new(:array) # fake token to denote an array type
-  end
-
   # Peek at first object and return it, return array object if array
 
   def peek
     if self[0].class == Array
-      return @array_token
+      return :array
     end
-    return self[0]
+    return self[0].type
   end
 
   # Scan for the matching parentheses
@@ -27,7 +21,7 @@ class Tokens < Array
         depth -= 1
       end
     end
-    raise "Unmatched paren"
+    raise "Unable to find matched parentheses. Check to ensure you all parentheses are matching."
   end
 end
 
