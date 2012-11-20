@@ -29,20 +29,11 @@ end
 # Token object
 
 class Token
-  attr_reader :type, :val, :truth
+  attr_reader :type, :val
 
   def initialize(type, val = nil, truth = nil)
     @type = type
     @val = val
-    @truth = truth
-  end
-
-  def set_true
-    @truth = true
-  end
-
-  def set_false
-    @false = false
   end
 
 end

@@ -1,4 +1,5 @@
 require 'ruby_logic/parser'
 require 'ruby_logic/lexer'
 require 'ruby_logic/tokens'
+require 'ruby_logic/interpreter'
 require 'colorize'

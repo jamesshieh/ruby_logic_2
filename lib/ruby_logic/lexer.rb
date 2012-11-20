@@ -7,6 +7,7 @@ class Lexer
   # Create tokenize and create tokens object
 
   def tokenize_input
+    token_list = []
     standardize_input
     tokenized_input = []
     @user_input.split(",").each do |statement|
@@ -14,6 +15,7 @@ class Lexer
       statement.scan(/\S/).each do |token|
         case
         when token =~ /[A-Z]/
+
           tokens << Token.new(:proposition, token.to_sym)
         when token =~ /[x\!\|\&\+\>]/
           tokens << Token.new(token.to_sym)

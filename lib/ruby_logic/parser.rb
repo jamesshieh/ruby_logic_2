@@ -3,7 +3,18 @@ class Parser
   def initialize(user_input)
     lexer = Lexer.new(user_input)
     @tokenized_input = lexer.tokenize_input
+    @truth_table ||= generate_truth_table(user_input)
   end
+
+  def truth_table
+    @truth_table
+  end
+
+  def parse_trees
+    parse_trees ||= parse
+  end
+
+  private
 
   # Main parse function that is called
 
@@ -15,7 +26,14 @@ class Parser
     parse_trees
   end
 
-  private
+  def generate_truth_table(user_input)
+    truth_table = {}
+    propositions = user_input.scan(/[A-Z]/).uniq
+    propositions.each do |prop|
+      truth_table[prop.to_sym] = nil
+    end
+    truth_table
+  end
 
   # Other parse levels
 
