@@ -23,9 +23,11 @@ def pretty_print(parse_output)
 end
 
 puts
-parser.parse.each do |statement|
+parser.parse_trees.each do |statement|
   pretty_print(statement)
   puts
 end
 puts
+interpreter = Interpreter.new(parser.parse_trees, parser.truth_table)
+puts interpreter.validity?
 

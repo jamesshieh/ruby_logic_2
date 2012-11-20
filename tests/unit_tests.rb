@@ -2,6 +2,12 @@ $LOAD_PATH.unshift(File.expand_path(File.join(File.dirname(__FILE__),".." , "lib
 require 'ruby_logic'
 require 'debugger'
 
+test0 = "A"
+parser = Parser.new(test0)
+parser.parse_trees
+interpreter = Interpreter.new(parser.parse_trees, parser.truth_table)
+print interpreter.validity?
+
 test1 = "A>C, A, !B, (A&!B)>D, A&(B|C)&D"
 parser = Parser.new(test1)
 interpreter = Interpreter.new(parser.parse_trees, parser.truth_table)

@@ -1,8 +1,12 @@
 class Tokens < Array
 
+  # Tokens class which is an array of tokens and can peek
+
   def initialize
-    @array_token = Token.new(:array)
+    @array_token = Token.new(:array) # fake token to denote an array type
   end
+
+  # Peek at first object and return it, return array object if array
 
   def peek
     if self[0].class == Array
@@ -11,6 +15,7 @@ class Tokens < Array
     return self[0]
   end
 
+  # Scan for the matching parentheses
   def scan_paren
     depth = 0
     self.each_with_index do |token, i|

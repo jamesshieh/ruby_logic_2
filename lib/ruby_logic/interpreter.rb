@@ -6,6 +6,8 @@ class Interpreter
     @validity = true
   end
 
+  # Loop solve until nothing more can be derived
+
   def solve_until_complete
     old_truth_table = nil
     while old_truth_table != @truth_table
@@ -14,6 +16,8 @@ class Interpreter
     end
     @solved = true
   end
+
+  # One iteration of solving the statements
 
   def solve_once
     @parse_trees.each do |statement|
@@ -32,6 +36,8 @@ class Interpreter
     end
   end
 
+  # Is the statement provably true from the user's input
+
   def validity?
     solve_until_complete unless @solved
     @parse_trees.each do |statement|
@@ -43,6 +49,8 @@ class Interpreter
   end
 
   private
+
+  # Set any givens
 
   def set_given(stmt)
     if stmt.class == Token
@@ -57,10 +65,14 @@ class Interpreter
     end
   end
 
+  # Set a proposition
+
   def set_truth(val, truth)
     @truth_table[val] = truth if @truth_table[val] == nil
     raise "Contradiction setting truth value for: #{val}" unless @truth_table[val] == truth
   end
+
+  # Return a statement broken into objects and truths
 
   def return_stmt_objects(stmt)
     operator, left = stmt[0], stmt[1]
@@ -69,6 +81,8 @@ class Interpreter
     r ||= eval_side(right) unless operator.type == :!
     return operator, left, right, l, r
   end
+
+  # Test for or implications
 
   def test_or_implies(stmt)
     operator, left, right, l, r = return_stmt_objects(stmt)
@@ -80,11 +94,15 @@ class Interpreter
     end
   end
 
+  # Test for valid implications
+
   def test_implies(stmt)
     operator, left, right, l, r = return_stmt_objects(stmt)
     raise "Expecting implies instead got #{operator.type}" unless operator.type == :>
     set_truth(right.val, true) if l
   end
+
+  # Test for cases of IFF
 
   def test_iff(stmt)
     operator, left, right, l, r = return_stmt_objects(stmt)
@@ -95,6 +113,8 @@ class Interpreter
       set_truth(right.val, l)
     end
   end
+
+  # Evaluate a statement into a boolean
 
   def eval_stmt(stmt)
     operator, left, right, l, r = return_stmt_objects(stmt)
@@ -118,6 +138,9 @@ class Interpreter
       l == r
     end
   end
+
+  # Evaluate a side into a boolean by recursively calling eval statement until
+  # hitting a terminal proposition
 
   def eval_side(side)
     if side.class == Array
