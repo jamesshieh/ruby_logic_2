@@ -5,29 +5,35 @@ require 'ruby_logic'
 
 user_input = gets.chomp
 parser = Parser.new(user_input)
-
-def pretty_print(parse_output)
-  print "[ "
-  if parse_output.class == Array
-    parse_output.each do |token|
-      if token.class == Array
-        pretty_print(token)
-      else
-        print " #{token.type} "
+program = parser.program
+interpreter = Interpreter.new(program, parser.truth_table)
+def pretty_print(program)
+  if !program.nil?
+    case program.type
+    when :program
+      program.left.each do |clause|
+        puts "Type: #{clause.type}"
+        pretty_print(clause)
+        puts
       end
+    when :statement
+      pretty_print(program.left)
+    when :declaration
+      pretty_print(program.left)
+    when :terminal
+      print "#{program.left} "
+    when :parens || :not || :negation
+      print "\[#{program.type} "
+      pretty_print(program.left)
+    else
+      print "\[#{program.type} "
+      pretty_print(program.left)
+      pretty_print(program.right)
+      print "\]"
     end
-  else
-    print " #{parse_output.type} "
   end
-  print " ]"
 end
-
-puts
-parser.parse_trees.each do |statement|
-  pretty_print(statement)
-  puts
-end
-puts
-interpreter = Interpreter.new(parser.parse_trees, parser.truth_table)
-puts interpreter.validity?
-
+print program.left
+puts "Validity: #{interpreter.validity?}"
+puts "Truth Table: #{interpreter.truth_table}"
+pretty_print(program)

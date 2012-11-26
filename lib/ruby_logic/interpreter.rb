@@ -1,11 +1,15 @@
 class Interpreter
 
-  def initialize(parse_trees, truth_table)
-    @parse_trees, @truth_table = parse_trees, truth_table
+  def initialize(program, truth_table)
+    @program, @truth_table = program, truth_table
     @solved = false
     @validity = true
   end
 
+  def truth_table
+    solve_until_complete unless @solved
+    @truth_table
+  end
   # Loop solve until nothing more can be derived
 
   def solve_until_complete
@@ -20,18 +24,19 @@ class Interpreter
   # One iteration of solving the statements
 
   def solve_once
-    @parse_trees.each do |statement|
-      if statement.class == Array && statement.length > 2
-        case statement[0].type
-        when :|
-          test_or_implies(statement)
-        when :>
-          test_implies(statement)
-        when :+
-          test_iff(statement)
+    @program.left.each do |clause|
+      case clause.type
+      when :declaration
+        set_given(clause.left)
+      when :statement
+        case clause.left.type
+        when :or
+          test_or_implies(clause.left)
+        when :implies
+          test_implies(clause.left)
+        when :iff
+          test_iff(clause.left)
         end
-      else
-        set_given(statement)
       end
     end
   end
@@ -40,9 +45,9 @@ class Interpreter
 
   def validity?
     solve_until_complete unless @solved
-    @parse_trees.each do |statement|
-      if statement.class == Array && statement.length > 2
-        return false unless eval_stmt(statement)
+    @program.left.each do |clause|
+      if clause.type == :statement
+        return false unless eval_stmt(clause.left)
       end
     end
     true
@@ -52,90 +57,83 @@ class Interpreter
 
   # Set any givens
 
-  def set_given(stmt)
-    if stmt.class == Token
-      val = stmt.val
-      @truth_table[val] = true if @truth_table[val] == nil
-      raise "Contradiction setting given: #{val}" unless @truth_table[val] == true
+  def set_given(stmt, truth = true)
+    if stmt.type == :terminal
+      val = stmt.left
+      if @truth_table[val].nil?
+        @truth_table[val] = truth
+      else
+        raise "Contradiction setting given: #{val}" unless @truth_table[val] == truth
+      end
     else
-      proposition = stmt[-1] if stmt[-1].type == :proposition
-      val = proposition.val
-      @truth_table[val] = false if @truth_table[val] == nil
-      raise "Contradiction setting negated given: !#{val}" unless @truth_table[val] == false
+      if stmt.type == :negation
+        set_given(stmt.left, !truth)
+      end
     end
   end
 
   # Set a proposition
 
-  def set_truth(val, truth)
+  def set_truth(val, truth = true)
     @truth_table[val] = truth if @truth_table[val] == nil
     raise "Contradiction setting truth value for: #{val}" unless @truth_table[val] == truth
-  end
-
-  # Return a statement broken into objects and truths
-
-  def return_stmt_objects(stmt)
-    operator, left = stmt[0], stmt[1]
-    right ||= stmt[2] unless operator.type == :!
-    l = eval_side(left)
-    r ||= eval_side(right) unless operator.type == :!
-    return operator, left, right, l, r
   end
 
   # Test for or implications
 
   def test_or_implies(stmt)
-    operator, left, right, l, r = return_stmt_objects(stmt)
-    raise "Expecting or instead got #{operator.type}" unless operator.type == :|
+    l = eval_side(stmt.left)
+    r = eval_side(stmt.right)
     if !l.nil? && !l
-      set_truth(right.val, true)
+      set_truth(stmt.right.left) if stmt.right.type == :terminal
     elsif !r.nil? && !r
-      set_truth(left.val, true)
+      set_truth(stmt.left.left) if stmt.left.type == :terminal
     end
   end
 
   # Test for valid implications
 
   def test_implies(stmt)
-    operator, left, right, l, r = return_stmt_objects(stmt)
-    raise "Expecting implies instead got #{operator.type}" unless operator.type == :>
-    set_truth(right.val, true) if l
+    l = eval_side(stmt.left)
+    set_truth(stmt.right.left) if l && stmt.right.type == :terminal
   end
 
   # Test for cases of IFF
 
   def test_iff(stmt)
-    operator, left, right, l, r = return_stmt_objects(stmt)
-    raise "Expecting iff instead got #{operator.type}" unless operator.type == :+
+    l = eval_side(stmt.left)
+    r = eval_side(stmt.right)
     if r && l.nil?
-      set_truth(left.val, r)
+      set_truth(stmt.left.left, r) if stmt.left.type == :terminal
     elsif l && r.nil?
-      set_truth(right.val, l)
+      set_truth(stmt.right.left, l) if stmt.right.type == :terminal
     end
   end
 
   # Evaluate a statement into a boolean
 
   def eval_stmt(stmt)
-    operator, left, right, l, r = return_stmt_objects(stmt)
-    return nil if l.nil? || r.nil? && operator.type != :!
-    case operator.type
-    when :!
+    l = eval_side(stmt.left)
+    r = eval_side(stmt.right)
+    case stmt.type
+    when :not
       !l
-    when :&
+    when :and
       l && r
-    when :|
+    when :or
       l || r
-    when :x
+    when :xor
       l ^ r
-    when :>
+    when :implies
       if l
         r
       else
-        false
+        r
       end
-    when :+
+    when :iff
       l == r
+    when :parens
+      l
     end
   end
 
@@ -143,10 +141,11 @@ class Interpreter
   # hitting a terminal proposition
 
   def eval_side(side)
-    if side.class == Array
+    return nil if side.nil?
+    if side.type == :terminal
+      return @truth_table[side.left]
+    else
       eval_stmt(side)
-    elsif side.type == :proposition
-      return @truth_table[side.val]
     end
   end
 
