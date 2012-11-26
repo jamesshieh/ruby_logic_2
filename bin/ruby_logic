@@ -33,7 +33,6 @@ def pretty_print(program)
     end
   end
 end
-print program.left
 puts "Validity: #{interpreter.validity?}"
 puts "Truth Table: #{interpreter.truth_table}"
 pretty_print(program)
