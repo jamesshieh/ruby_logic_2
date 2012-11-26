@@ -1,12 +1,19 @@
-class Parser
+class Node
+  attr_accessor :type, :left, :right
 
-  # TODO: create a data structure to store parsed product? operator/left/right
-  # format
+  def initialize(@type, @left, @right = nil)
+    @left = left
+    @right = right
+    @type = type
+  end
+end
+
+class Parser
 
   def initialize(user_input)
     @user_input = user_input
     lexer = Lexer.new(user_input)
-    @tokenized_input = lexer.tokenize_input
+    @tokens = lexer.tokens
   end
 
   # Return a truth table
@@ -17,22 +24,11 @@ class Parser
 
   # Return a parse tree
 
-  def parse_trees
-    @parse_trees ||= parse
+  def program
+    @program ||= parse_program
   end
 
   private
-
-  # Main parse function that is called
-
-  def parse
-    parse_trees = []
-    @tokenized_input.each do |statement|
-      parse_trees << parse_iff(statement)
-      raise "Unexpected syntax. #{statement} not processed" unless statement.empty?
-    end
-    parse_trees
-  end
 
   # Generate a truth table
 
@@ -45,17 +41,81 @@ class Parser
     truth_table
   end
 
-  # Other parse levels
+  # Main parse function that is called
 
-  # Parse nesting by segmenting out the statement in the parentheses then
-  # calling normal parse function on it
+  def parse_program
+    clauses = []
+
+    loop do
+      backup = @tokens.dup
+      
+      decl = parse_declaration(@tokens)
+
+      if @tokens.empty?
+        clauses << decl
+        break
+      elsif @tokens.peek == :comma
+        clauses << decl
+        tokens.shift # Remove comma
+        next
+      else
+        @tokens = backup
+
+        stmt = parse_statement(@tokens)
+
+        if @tokens.empty?
+          clauses << stmt
+          break
+        elsif @tokens.peek == :comma
+          clauses << stmt
+          tokens.shift # Remove comma
+          next
+        else 
+          raise "Expecting comma, but got #{@tokens.peek}"
+        end
+      end
+    end
+
+    Node.new(:program, clauses)
+  end
+
+  # Declaration
+  # declaration: negation
+
+  def parse_declaration(tokens)
+    parse_negation(tokens)
+  end
+
+  # Parse Statement
+  # statement: iff
+
+  def parse_statement(tokens)
+    parse_iff(tokens)
+  end
+
+  # Parse Declaration negation
+  # negation: ! negation
+  #         | PROPOSITION
+
+  def parse_negation(tokens)
+    if !tokens.empty? && tokens.peek == :!
+      tokens.shift
+      parse_negation(tokens)
+    else
+      shift_and_expect(tokens, :proposition)
+    end
+  end
+
+  # Parse parentheses
+  # parens: ( iff )
+  #       | PROPOSITION
 
   def parse_nesting(tokens)
     if !tokens.empty? && tokens.peek == :lparen
       # Process everything inside of parens
       tokens.shift # Shift starting "("
-      matched_paren = tokens.scan_paren
-      expr = tokens.shift(matched_paren)
+
+      expr = tokens.shift(tokens.scan_paren)
       left_tokens = Tokens.new(expr)
       left_parse_tree = parse_iff(left_tokens)
       
@@ -69,87 +129,92 @@ class Parser
 
       # Process new tokens string
       tokens = Tokens.new(expr)
-      parse_tree = parse_iff(tokens)
+      parse_tree = Node.new(:parens, parse_iff(tokens))
     elsif tokens.empty?
       return
-    elsif tokens.peek == :proposition || tokens.peek == :array
-      tokens.shift
+    elsif tokens.peek == :proposition
+      Node.new(:proposition, shift_and_expect(tokens, :proposition))
     end
   end
 
-  # Parse out a unary negation
-  # ! =>  ! ( expression )
+  # Parse out a unary not
+  # not: ! not
+  #    | parens
 
-  def parse_negation(tokens)
-    parse_tree = parse_nesting(tokens)
-
+  def parse_not(tokens)
     if !tokens.empty? && tokens.peek == :!
-      parse_tree = [tokens.shift, shift_and_expect(tokens, :proposition)]
+      tokens.shift
+      parse_tree = Node.new(:negation, parse_negation(tokens))
+    else
+      parse_tree = parse_nesting(tokens)
     end
-
-    parse_tree
   end
 
   # Parse out an and from two negations
-  # & => ! { & ! }
+  # and: negation { & negation }
 
   def parse_and(tokens)
     parse_tree = parse_negation(tokens)
 
     while !tokens.empty? && tokens.peek == :&
-      parse_tree = [tokens.shift, parse_tree, parse_negation(tokens)]
+      tokens.shift
+      parse_tree = Node.new(:and, parse_tree, parse_not(tokens))
     end
 
     parse_tree
   end
 
   # Parse out an or from two ands
-  # | => & { | & }
+  # or: and { | and }
 
   def parse_or(tokens)
     parse_tree = parse_and(tokens)
 
     while !tokens.empty? && tokens.peek == :|
-      parse_tree = [tokens.shift, parse_tree, parse_and(tokens)]
+      tokens.shift
+      parse_tree = Node.new(:or, parse_tree, parse_and(tokens))
     end
 
     parse_tree
   end
 
   # Parse out an xor from two ors
-  # x => | { x | }
+  # xor: or { x or }
 
   def parse_xor(tokens)
     parse_tree = parse_or(tokens)
 
     while !tokens.empty? && tokens.peek == :x
-      parse_tree = [tokens.shift, parse_tree, parse_or(tokens)]
+      tokens.shift
+      parse_tree = Node.new(:xor, parse_tree, parse_or(tokens))
     end
 
     parse_tree
   end
 
   # Parse implies
-  # > => x > x
+  # implies: xor { > xor }
 
   def parse_implies(tokens)
     parse_tree = parse_xor(tokens)
 
     while !tokens.empty? && tokens.peek == :>
-      parse_tree = [tokens.shift, parse_tree, parse_xor(tokens)]
+      tokens.shift
+      parse_tree = Node.new(:implies, parse_tree, parse_xor(tokens))
     end
 
     parse_tree
   end
 
   # Parse iff
-  # + => > + >
+  # iff: implies + implies
 
   def parse_iff(tokens)
     parse_tree = parse_implies(tokens)
 
-    while !tokens.empty? && tokens.peek == :+
-      parse_tree = [tokens.shift, parse_tree, parse_xor(tokens)]
+    if !tokens.empty? && tokens.peek == :+
+      tokens.shift
+      parse_tree = Node.new(:iff, parse_tree, parse_implies(tokens))
     end
 
     parse_tree

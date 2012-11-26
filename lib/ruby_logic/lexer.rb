@@ -6,27 +6,28 @@ class Lexer
 
   # Create tokenize and create tokens object
 
+  def tokens
+    @tokens ||= tokenize_input
+  end
+
   def tokenize_input
     token_list = []
     standardize_input
     tokenized_input = []
-    @user_input.split(",").each do |statement|
-      tokens = Tokens.new
-      statement.scan(/\S/).each do |token|
-        case
-        when token =~ /[A-Z]/
-
-          tokens << Token.new(:proposition, token.to_sym)
-        when token =~ /[x\!\|\&\+\>]/
-          tokens << Token.new(token.to_sym)
-        when token =~ /[\(]/
-          tokens << Token.new(:lparen)
-        when token =~ /[\)]/
-          tokens << Token.new(:rparen)
-        else raise "Unexpected token: #{token}"
-        end
+    statement.scan(/\S/).each do |token|
+      case
+      when token =~ /[A-Z]/
+        tokenized_input << Token.new(:proposition, token.to_sym)
+      when token =~ /[x\!\|\&\+\>]/
+        tokenized_input << Token.new(token.to_sym)
+      when token =~ /[\(]/
+        tokenized_input << Token.new(:lparen)
+      when token =~ /[\)]/
+        tokenized_input << Token.new(:rparen)
+      when token =~ /[\,]/
+        tokenized_input << Token.new(:comma)
+      else raise "Unexpected token: #{token}"
       end
-      tokenized_input << tokens
     end
     tokenized_input
   end
