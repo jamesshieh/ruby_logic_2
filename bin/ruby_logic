@@ -3,6 +3,19 @@
 $LOAD_PATH.unshift(File.expand_path(File.join(File.dirname(__FILE__),".." , "lib")))
 require 'ruby_logic'
 
+puts "Input symbolic logic statements separated by commas:".blue
+puts "Valid Propositions: A-Z".green
+puts "Valid Symbols:".green
+puts "AND: ^ or &".green
+puts "OR: v or |".green
+puts "XOR: x".green
+puts "IFF: <-> or <> or +".green
+puts "IMPLIES: -> or >".green
+puts "PARENTHESES: ()".green
+puts "NEGATION: ~ or !".green
+puts "Please enter your statement:".red
+
+
 user_input = gets.chomp
 parser = Parser.new(user_input)
 program = parser.program
@@ -29,10 +42,13 @@ def pretty_print(program)
       print "\[#{program.type} "
       pretty_print(program.left)
       pretty_print(program.right)
-      print "\]"
+      print "\] "
     end
   end
 end
-puts "Validity: #{interpreter.validity?}"
-puts "Truth Table: #{interpreter.truth_table}"
+
+puts "Statement: #{user_input}".yellow
+puts "Validity: #{interpreter.validity?}".yellow
+puts "Truth Table: #{interpreter.truth_table}".yellow
+puts "Parsed Statements:".yellow
 pretty_print(program)

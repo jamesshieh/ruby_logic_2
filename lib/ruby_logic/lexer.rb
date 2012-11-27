@@ -10,6 +10,8 @@ class Lexer
     @tokens ||= tokenize_input
   end
 
+  private
+
   def tokenize_input
     token_list = []
     standardize_input
@@ -31,8 +33,6 @@ class Lexer
     end
     tokenized_input
   end
-
-  private
 
   # Standardize input across all different allowed symbols
 

@@ -3,7 +3,6 @@ class Interpreter
   def initialize(program, truth_table)
     @program, @truth_table = program, truth_table
     @solved = false
-    @validity = true
   end
 
   def truth_table
@@ -20,6 +19,23 @@ class Interpreter
     end
     @solved = true
   end
+
+  # Is the statement provably true from the user's input
+
+  def validity?
+    solve_until_complete unless @solved
+    return :Ambiguous if !@truth_table.values.grep(nil).empty?
+    @program.left.each do |clause|
+      if clause.type == :statement
+        return false unless eval_stmt(clause.left)
+      elsif clause.type == :statement
+        return :Ambiguous if eval_stmt(clause.left).nil?
+      end
+    end
+    true
+  end
+
+  private
 
   # One iteration of solving the statements
 
@@ -40,20 +56,6 @@ class Interpreter
       end
     end
   end
-
-  # Is the statement provably true from the user's input
-
-  def validity?
-    solve_until_complete unless @solved
-    @program.left.each do |clause|
-      if clause.type == :statement
-        return false unless eval_stmt(clause.left)
-      end
-    end
-    true
-  end
-
-  private
 
   # Set any givens
 
