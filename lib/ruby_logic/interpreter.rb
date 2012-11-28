@@ -97,7 +97,12 @@ class Interpreter
 
   def test_implies(stmt)
     l = eval_side(stmt.left)
-    set_truth(stmt.right.left) if l && stmt.right.type == :terminal
+    r = eval_side(stmt.right)
+    if r.nil?
+      set_truth(stmt.right.left) if l && stmt.right.type == :terminal
+    elsif l.nil?
+      set_truth(stmt.left.left, false) if !r && stmt.left.type == :terminal
+    end
   end
 
   # Test for cases of IFF
@@ -130,7 +135,7 @@ class Interpreter
       if l
         r
       else
-        r
+        true
       end
     when :iff
       l == r
