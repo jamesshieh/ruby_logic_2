@@ -1,7 +1,17 @@
-A ruby symbolic logic parser.
+Ruby Logic
+==========
 
-Ruby Logic is built to parse symbolic logic statements following the format
-below:
+A symbolic logic parser written in ruby.
+
+# To run
+
+  bundle install
+  bin/ruby\_logic
+
+## The language
+
+Ruby logic is capable of parsing the following symbols in a symbolic logic
+string:
 
 Propositions: A-Z
 AND: &
@@ -11,31 +21,35 @@ IMPIES: >
 IFF: +
 PARENS: ()
 NOT: !
-COMMAS: , separate statemets
+COMMAS: , (to separate statemets)
 
-Example:
-A, !B, (A&B)>C, DxE+(A|B), ((A&E)|(C&D))>F
+An example of a full statement:
+  A, !B, (A&B)>C, DxE+(A|B), ((A&E)|(C&D))>F
 
 A single propositional statement is declared as a fact:
-A     # A = true
-!A    # A = false
+  A     # A = true
+  !A    # A = false
+
+### Simple symbolic logic solving
 
 The logic solver will attempt to resolve as many propositions as possible with
 the given statements and facts:
 
-Input:
+Example:
 
-A, B, (A&B)>C
+  Input:
+  
+  A, B, (A&B)>C
 
-Output:
+  Output:
 
-Statement: A, B, (A&B)>C
-Validity: true
-Truth Table: {:A=>true, :B=>true, :C=>true}
-Parsed Statements:
-Type: declaration
-A
-Type: declaration
-B
-Type: statement
-[implies [parens [and A B ] C ]
+  Statement: A, B, (A&B)>C
+  Validity: true
+  Truth Table: {:A=>true, :B=>true, :C=>true}
+  Parsed Statements:
+  Type: declaration
+  A
+  Type: declaration
+  B
+  Type: statement
+  [implies [parens [and A B ] C ]
