@@ -8,7 +8,7 @@ A symbolic logic parser written in ruby.
 ### To run
 
     bundle install
-    bin/ruby\_logic
+    bin/ruby_logic
 
 ### The language
 
