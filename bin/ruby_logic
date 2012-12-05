@@ -20,7 +20,8 @@ user_input = gets.chomp
 parser = Parser.new(user_input)
 program = parser.program
 interpreter = Interpreter.new(program, parser.truth_table)
-def pretty_print(program)
+
+def pretty_print_statements(program)
   if !program.nil?
     case program.type
     when :program
@@ -51,4 +52,4 @@ puts "Statement: #{user_input}".yellow
 puts "Validity: #{interpreter.validity?}".yellow
 puts "Truth Table: #{interpreter.truth_table}".yellow
 puts "Parsed Statements:".yellow
-pretty_print(program)
+pretty_print_statements(program)

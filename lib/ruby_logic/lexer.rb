@@ -12,6 +12,8 @@ class Lexer
 
   private
 
+  # Create tokens out of input
+
   def tokenize_input
     token_list = []
     standardize_input

@@ -5,10 +5,12 @@ class Interpreter
     @solved = false
   end
 
+  # Generate a truth table for the input
   def truth_table
     solve_until_complete unless @solved
     @truth_table
   end
+
   # Loop solve until nothing more can be derived
 
   def solve_until_complete
@@ -100,7 +102,7 @@ class Interpreter
     r = eval_side(stmt.right)
     if r.nil?
       set_truth(stmt.right.left) if l && stmt.right.type == :terminal
-    elsif l.nil?
+    elsif l.nil? && !r.nil?
       set_truth(stmt.left.left, false) if !r && stmt.left.type == :terminal
     end
   end
