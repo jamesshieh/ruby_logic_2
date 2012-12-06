@@ -26,13 +26,10 @@ class Interpreter
 
   def validity?
     solve_until_complete unless @solved
-    return :Ambiguous if !@truth_table.values.grep(nil).empty?
+    return :ambiguous if !@truth_table.values.grep(nil).empty?
     @program.left.each do |clause|
-      if clause.type == :statement
-        return false unless eval_stmt(clause.left)
-      elsif clause.type == :statement
-        return :Ambiguous if eval_stmt(clause.left).nil?
-      end
+      false if clause.type == :statement && !eval_stmt(clause.left)
+      :ambiguous if clause.type == :statement && eval_stmt(clause.left).nil?
     end
     true
   end
@@ -70,9 +67,7 @@ class Interpreter
         raise "Contradiction setting given: #{val}" unless @truth_table[val] == truth
       end
     else
-      if stmt.type == :negation
-        set_given(stmt.left, !truth)
-      end
+      set_given(stmt.left, !truth) if stmt.type == :negation
     end
   end
 
@@ -134,11 +129,7 @@ class Interpreter
     when :xor
       l ^ r
     when :implies
-      if l
-        r
-      else
-        true
-      end
+      l ? r : true
     when :iff
       l == r
     when :parens
@@ -151,11 +142,6 @@ class Interpreter
 
   def eval_side(side)
     return nil if side.nil?
-    if side.type == :terminal
-      return @truth_table[side.left]
-    else
-      eval_stmt(side)
-    end
+    side.type == :terminal ? @truth_table[side.left] : eval_stmt(side)
   end
-
 end

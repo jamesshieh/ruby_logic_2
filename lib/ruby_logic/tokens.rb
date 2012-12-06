@@ -3,10 +3,7 @@ class Tokens < Array
   # Peek at first object and return it, return array object if array
 
   def peek
-    if self[0].class == Array
-      return :array
-    end
-    return self[0].type
+    self[0].class == Array ? :array : self[0].type
   end
 
   # Scan for the matching parentheses

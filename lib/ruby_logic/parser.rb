@@ -218,7 +218,7 @@ class Parser
           clauses << stmt
           @tokens.shift # Remove comma
           next
-        else 
+        else
           raise "Expecting comma, but got #{@tokens.peek}"
         end
       end
