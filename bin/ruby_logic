@@ -27,22 +27,22 @@ def pretty_print_statements(program)
     when :program
       program.left.each do |clause|
         puts "Type: #{clause.type}"
-        pretty_print(clause)
+        pretty_print_statements(clause)
         puts
       end
     when :statement
-      pretty_print(program.left)
+      pretty_print_statements(program.left)
     when :declaration
-      pretty_print(program.left)
+      pretty_print_statements(program.left)
     when :terminal
       print "#{program.left} "
     when :parens || :not || :negation
       print "\[#{program.type} "
-      pretty_print(program.left)
+      pretty_print_statements(program.left)
     else
       print "\[#{program.type} "
-      pretty_print(program.left)
-      pretty_print(program.right)
+      pretty_print_statements(program.left)
+      pretty_print_statements(program.right)
       print "\] "
     end
   end

@@ -28,8 +28,8 @@ class Interpreter
     solve_until_complete unless @solved
     return :ambiguous if !@truth_table.values.grep(nil).empty?
     @program.left.each do |clause|
-      false if clause.type == :statement && !eval_stmt(clause.left)
-      :ambiguous if clause.type == :statement && eval_stmt(clause.left).nil?
+      return false if clause.type == :statement && !eval_stmt(clause.left)
+      return :ambiguous if clause.type == :statement && eval_stmt(clause.left).nil?
     end
     true
   end
@@ -60,12 +60,7 @@ class Interpreter
 
   def set_given(stmt, truth = true)
     if stmt.type == :terminal
-      val = stmt.left
-      if @truth_table[val].nil?
-        @truth_table[val] = truth
-      else
-        raise "Contradiction setting given: #{val}" unless @truth_table[val] == truth
-      end
+      set_truth(stmt.left, truth)
     else
       set_given(stmt.left, !truth) if stmt.type == :negation
     end
@@ -74,7 +69,7 @@ class Interpreter
   # Set a proposition
 
   def set_truth(val, truth = true)
-    @truth_table[val] = truth if @truth_table[val] == nil
+    @truth_table[val] = truth if @truth_table[val].nil?
     raise "Contradiction setting truth value for: #{val}" unless @truth_table[val] == truth
   end
 

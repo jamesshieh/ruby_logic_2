@@ -27,7 +27,7 @@ end
 class Token
   attr_reader :type, :val
 
-  def initialize(type, val = nil, truth = nil)
+  def initialize(type, val = nil)
     @type = type
     @val = val
   end
