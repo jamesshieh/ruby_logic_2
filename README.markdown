@@ -15,8 +15,7 @@ A symbolic logic parser written in ruby.
 Ruby logic is capable of parsing the following symbols in a symbolic logic
 string:
 
-Propositions: A-Z
-
+    Propositions: A-Z
     AND: &
     OR: |
     XOR : x
@@ -42,11 +41,11 @@ the given statements and facts:
 
 Example:
 
-    Input:
-  
+Input:
+
     A, B, (A&B)>C
 
-    Output:
+Output:
 
     Statement: A, B, (A&B)>C
     Validity: true
